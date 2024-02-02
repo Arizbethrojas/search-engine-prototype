@@ -93,13 +93,13 @@ static void crawl(char *seedURL, char *pageDirectory, const int maxDepth)
     // thisPage = webpage_new(initialURL, maxDepth, NULL);
     // pass it in as depth 0
     bag_insert(pagesLeft, firstPage);
-    int docID = 0;
+    int docID = 1;
     webpage_t *currPage = bag_extract(pagesLeft);
     while (currPage != NULL)
     {
         // webpage_t* currPage = bag_extract(pagesLeft);
         bool fetchedPage = webpage_fetch(currPage); // does it automatically stop for a sec or do i need to build that in?
-        docID = docID + 1;
+        //docID = docID + 1;
         // confused about what to check here?
         if (fetchedPage == true)
         {
@@ -112,10 +112,11 @@ static void crawl(char *seedURL, char *pageDirectory, const int maxDepth)
             }
             docID++; // increment the ID
         }
-        currPage = bag_extract(pagesLeft);
+        
         // printf("found: %s\n", webpage_getURL(currPage));
         // printf("added: %s\n", webpage_getURL(currPage));
         webpage_delete(currPage);
+        currPage = bag_extract(pagesLeft);
     }
     hashtable_delete(pagesSeen, NULL); // what goes in here?
     // make an internal delete program to delete strings // give it null as item
@@ -131,13 +132,11 @@ static void pageScan(webpage_t *page, bag_t *pagesToCrawl, hashtable_t *pagesSee
         char *standardURL = normalizeURL(nextURL);
         if (isInternalURL(standardURL) == true)
         { // if that URL is internal...
-            // char* index =" ";
             mem_free(nextURL);
             int newDepth = webpage_getDepth(page) + 1;
-            if (hashtable_insert(pagesSeen, nextURL, &pos) == true)
+            if (hashtable_insert(pagesSeen, nextURL, "") == true)
             {
-                int *position = 0;                                                                           // insert that webpage into the hashtable also should the item be NULL or should it be ""?
-                webpage_t *webpage = webpage_new(standardURL, newDepth, webpage_getNextURL(page, position)); // create a webpage for that URL
+                webpage_t *webpage = webpage_new(standardURL, newDepth, NULL); // create a webpage for that URL
                 bag_insert(pagesToCrawl, webpage);
                 printf("found: %s\n", webpage_getURL(webpage));
                 printf("added: %s\n", webpage_getURL(webpage));
@@ -145,14 +144,13 @@ static void pageScan(webpage_t *page, bag_t *pagesToCrawl, hashtable_t *pagesSee
             else
             {
                 // this is a duplicate URL that we have already visited
-                fprintf(stdout, "%s is a duplicate URL that we have already visited", nextURL);
+                fprintf(stdout, "%s is a duplicate URL that we have already visited\n", nextURL);
             }
-            // free(nextURL); am i supposed to be freeing here?
         }
         else
         {
             // this is not an internal URL
-            fprintf(stdout, "%s is an external URL", nextURL);
+            fprintf(stdout, "%s is an external URL\n", nextURL);
             // free(nextURL);//do i free here? do i free in both places?
         }
         nextURL = webpage_getNextURL(page, &pos);

@@ -17,7 +17,7 @@ void pagedir_save(const webpage_t *page, const char *pageDirectory, const int do
 
 bool pagedir_init(const char *pageDirectory)
 {
-    char *crawler = "/.crawler";
+    char *crawler = ".crawler";
     char pathname[strlen(pageDirectory) + strlen(crawler) + 1]; // create pageDirectory/.crawler pathname
     sprintf(pathname, "%s/%s", pageDirectory, crawler);
     // char *path = strcat(pageDirectory, crawler); //construct the pathname for the .crawler file in that directory
@@ -29,14 +29,12 @@ bool pagedir_init(const char *pageDirectory)
     FILE *fp = fopen(pathname, "w"); // open the file for writing
     if (fp == NULL)
     {
-        // free(path);
-        fclose(fp);
         fprintf(stderr, "Cannot open this file for writing\n"); // on error of opening file, return false.
         return false;
     }
     else
     {
-        // free(path);
+        //free(pathname);
         fclose(fp); // close the file and return true.
         return true;
     }
@@ -46,7 +44,7 @@ void pagedir_save(const webpage_t *page, const char *pageDirectory, const int do
 {
     char charId[20]; //the docID will go here 
     sprintf(charId, "%d", docID); 
-    char *path = malloc(strlen(pageDirectory) + strlen(charId) + 2); // prepare memory for pageDirectory/docID
+    char *path = malloc(strlen(pageDirectory) + strlen(charId) + 3); // prepare memory for pageDirectory/docID
     sprintf(path, "%s/%s", pageDirectory, charId); // concatinate here 
     FILE *fp = fopen(path, "w"); // open file
     if (fp != NULL)
