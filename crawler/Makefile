@@ -32,7 +32,7 @@ test: crawler testing.sh
 #>& testing.out
 
 valgrind: testing.sh
-	$(VALGRIND) ./testing.sh
+	$(VALGRIND) ./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/ ../common/data/letters 2
 
 #clean
 clean:

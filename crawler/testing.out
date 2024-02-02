@@ -1,6 +1,7 @@
-ml () {  module ml "$@"
-}
+bash -v testing.sh 
 module () {  _module_raw "$@" 2>&1
+}
+ml () {  module ml "$@"
 }
 _module_raw () {  eval `/usr/bin/tclsh8.6 /usr/lib/x86_64-linux-gnu/modulecmd.tcl bash "$@"`;
  _mlstatus=$?;
@@ -12,5 +13,4 @@ testing
 #seedURL is an 'internal' directory, to be used as the initial URL,
 #pageDirectory is the (existing) directory in which to write downloaded webpages, and
 #maxDepth is an integer in range [0..10] indicating the maximum crawl depth.
-./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/ ../common/data/letters 4
-testing.sh: line 6: 2640021 Segmentation fault      (core dumped) ./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/ ../common/data/letters 4
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/ ../common/data/letters 2

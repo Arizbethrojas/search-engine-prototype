@@ -21,21 +21,25 @@ static void pageScan(webpage_t *page, bag_t *pagesToCrawl, hashtable_t *pagesSee
 /* **************************************** */
 int main(const int argc, char *argv[])
 {
-    printf("thirteenth reason\n");
-    fflush(stdout);
-    char *seedURL = NULL; // initializing to place holder values
-    char *pageDir = NULL;
-    int maxDepth = 0;
-    parseArgs(argc, argv, &seedURL, &pageDir, &maxDepth);
-    crawl(seedURL, pageDir, maxDepth);
-    return 0;
+    // initializing to place holder values
+    char *seedURL = NULL;                                 // seedURL is the starting point
+    char *pageDir = NULL;                                 // pageDir is the directory where the output will be stored
+    int maxDepth = 0;                                     // depth of links to follow, value between 0 and 10 inclusive
+    parseArgs(argc, argv, &seedURL, &pageDir, &maxDepth); // call parseArgs
+    crawl(seedURL, pageDir, maxDepth);                    // call crawl
+    return 0;                                             // exit 0
 }
 
 static void parseArgs(const int argc, char *argv[], char **seedURL, char **pageDirectory, int *maxDepth)
 {
-    if (argc != 4) // expecting userinput in format:  executable seedURL pageDirectory maxDepth
+    if (argc != 4) // expects 4 arguments
     {
         printf("You must provide four arguments in the form of: executable seedURL pageDirectory maxDepth");
+        exit(1);
+    }
+    if (argv[1] == NULL || argv[2] == NULL || argv[3] == NULL)
+    {
+        printf("User provided NULL arguments");
         exit(1);
     }
     *seedURL = malloc((strlen(argv[1]) + 1) * sizeof(char));
@@ -63,18 +67,19 @@ static void parseArgs(const int argc, char *argv[], char **seedURL, char **pageD
     if (isInternalURL(standardURL) == false) // verify it is an internal URL
     {
         fprintf(stderr, "this is not an internal URL\n");
+        mem_free(standardURL);
         exit(1);
     }
     free(standardURL); // according to webpage.h I am repsonsible for freeing this
     if (pagedir_init(*pageDirectory) == false)
     {
-        printf("PLSSSSSSSSSn\n");
-        fflush(stdout);
         fprintf(stderr, "could not open file\n");
         exit(1);
     }
-    printf("NOOOOOO\n");
-    fflush(stdout);
+    else
+    {
+        pagedir_init(*pageDirectory);
+    }
 }
 
 static void crawl(char *seedURL, char *pageDirectory, const int maxDepth)
@@ -83,11 +88,11 @@ static void crawl(char *seedURL, char *pageDirectory, const int maxDepth)
     char *initialURL = malloc(strlen(seedURL) + 1);
     strcpy(initialURL, seedURL);
     hashtable_insert(pagesSeen, initialURL, "");
-    bag_t *pagesLeft = bag_new(); // these are actually the pages left
-    webpage_t *thisURL = mem_malloc(sizeof(thisURL));
-    thisURL = webpage_new(initialURL, maxDepth, NULL);
+    bag_t *pagesLeft = bag_new(); // these are actually the pages left to crawl
+    webpage_t *firstPage = webpage_new(initialURL, 0, NULL);
+    // thisPage = webpage_new(initialURL, maxDepth, NULL);
     // pass it in as depth 0
-    bag_insert(pagesLeft, initialURL);
+    bag_insert(pagesLeft, firstPage);
     int docID = 0;
     webpage_t *currPage = bag_extract(pagesLeft);
     while (currPage != NULL)
@@ -98,18 +103,23 @@ static void crawl(char *seedURL, char *pageDirectory, const int maxDepth)
         // confused about what to check here?
         if (fetchedPage == true)
         {
+            printf("fetched: %s\n", webpage_getURL(currPage));
             pagedir_save(currPage, pageDirectory, docID);
             if (webpage_getDepth(currPage) < maxDepth) // should this be less than or equal to?
             {
+                printf("scanning: %s\n", webpage_getURL(currPage));
                 pageScan(currPage, pagesLeft, pagesSeen);
             }
+            docID++; // increment the ID
         }
         currPage = bag_extract(pagesLeft);
+        // printf("found: %s\n", webpage_getURL(currPage));
+        // printf("added: %s\n", webpage_getURL(currPage));
         webpage_delete(currPage);
     }
     hashtable_delete(pagesSeen, NULL); // what goes in here?
     // make an internal delete program to delete strings // give it null as item
-    bag_delete(pagesLeft, webpage_delete); // is this NULL too? for webpage_delete
+    bag_delete(pagesLeft, NULL); // is this NULL too? for webpage_delete
 }
 
 static void pageScan(webpage_t *page, bag_t *pagesToCrawl, hashtable_t *pagesSeen)
@@ -118,13 +128,19 @@ static void pageScan(webpage_t *page, bag_t *pagesToCrawl, hashtable_t *pagesSee
     char *nextURL = webpage_getNextURL(page, &pos); // pos is incremented within webpage_getNextURL
     while (nextURL != NULL)
     { // while there is another URL on the page
-        if (isInternalURL(nextURL) == true)
+        char *standardURL = normalizeURL(nextURL);
+        if (isInternalURL(standardURL) == true)
         { // if that URL is internal...
             // char* index =" ";
+            mem_free(nextURL);
+            int newDepth = webpage_getDepth(page) + 1;
             if (hashtable_insert(pagesSeen, nextURL, &pos) == true)
-            {                                                                                                          // insert that webpage into the hashtable also should the item be NULL or should it be ""?
-                webpage_t *webpage = webpage_new(webpage_getURL(page), webpage_getDepth(page), webpage_getHTML(page)); // create a webpage for that URL
-                bag_insert(pagesToCrawl, webpage);                                                                     // insert it
+            {
+                int *position = 0;                                                                           // insert that webpage into the hashtable also should the item be NULL or should it be ""?
+                webpage_t *webpage = webpage_new(standardURL, newDepth, webpage_getNextURL(page, position)); // create a webpage for that URL
+                bag_insert(pagesToCrawl, webpage);
+                printf("found: %s\n", webpage_getURL(webpage));
+                printf("added: %s\n", webpage_getURL(webpage));
             }
             else
             {
@@ -139,5 +155,6 @@ static void pageScan(webpage_t *page, bag_t *pagesToCrawl, hashtable_t *pagesSee
             fprintf(stdout, "%s is an external URL", nextURL);
             // free(nextURL);//do i free here? do i free in both places?
         }
+        nextURL = webpage_getNextURL(page, &pos);
     }
 }

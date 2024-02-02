@@ -18,23 +18,25 @@ void pagedir_save(const webpage_t *page, const char *pageDirectory, const int do
 bool pagedir_init(const char *pageDirectory)
 {
     char *crawler = "/.crawler";
-    char *path = strcat(pageDirectory, crawler); //construct the pathname for the .crawler file in that directory
-    if (path == NULL)
+    char pathname[strlen(pageDirectory) + strlen(crawler) + 1]; // create pageDirectory/.crawler pathname
+    sprintf(pathname, "%s/%s", pageDirectory, crawler);
+    // char *path = strcat(pageDirectory, crawler); //construct the pathname for the .crawler file in that directory
+    if (pathname == NULL)
     {
         fprintf(stderr, "this is a NULL path\n");
         return false;
     }
-    FILE *fp = fopen(path, "w"); // open the file for writing
+    FILE *fp = fopen(pathname, "w"); // open the file for writing
     if (fp == NULL)
     {
-        free(path);
+        // free(path);
         fclose(fp);
         fprintf(stderr, "Cannot open this file for writing\n"); // on error of opening file, return false.
         return false;
     }
     else
     {
-        free(path);
+        // free(path);
         fclose(fp); // close the file and return true.
         return true;
     }
@@ -42,29 +44,24 @@ bool pagedir_init(const char *pageDirectory)
 
 void pagedir_save(const webpage_t *page, const char *pageDirectory, const int docID)
 {
-    char *path = mem_malloc(strlen(pageDirectory) + 20);
-    if (path == NULL)
-    {
-        fprintf(stderr, "this is a NULL path or a memory allocation error\n");
+    char charId[20]; //the docID will go here 
+    sprintf(charId, "%d", docID); 
+    char *path = malloc(strlen(pageDirectory) + strlen(charId) + 2); // prepare memory for pageDirectory/docID
+    sprintf(path, "%s/%s", pageDirectory, charId); // concatinate here 
+    FILE *fp = fopen(path, "w"); // open file
+    if (fp != NULL)
+    {                                                
+        fprintf(fp, "%s\n", webpage_getURL(page));   // print the URL
+        fprintf(fp, "%d\n", webpage_getDepth(page)); // print the depth
+        fprintf(fp, "%s\n", webpage_getHTML(page));  // print the HTML
+        fclose(fp);                                  // close the file
+        mem_free(path);
     }
-    // consider using malloc
-    if (pageDirectory != NULL)
+    else
     {
-        path[0] = '\0';
-        // below, I will construct the pathname for the page file in pageDirectory
-        sprintf(*path, "%s/%d", pageDirectory, docID); // I will manually add the slash character
-        FILE *fp = fopen(*path, "w");                  // open that file for writing
-        if (fp != NULL)                                // defensive programming
-        {
-            fprintf(fp, "%s\n", webpage_getURL(page));   // print the URL
-            fprintf(fp, "%d\n", webpage_getDepth(page)); // print the depth
-            fprintf(fp, "%s\n", webpage_getHTML(page));  // print the contents of the webpage
-        }
-        else
-        { // file can't be opened
-            fprintf(stderr, "you can't open the file");
-        }
-        fclose(fp);
-        free(path);
+        fprintf(stderr,"Error opening file");
+        fclose(fp); // close file
+        mem_free(path); //free memory 
+        return;
     }
 }
