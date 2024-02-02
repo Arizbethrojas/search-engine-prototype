@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "webpage.h": "c",
+        "mem.h": "c",
+        "pagedir.h": "c"
+    }
+}
