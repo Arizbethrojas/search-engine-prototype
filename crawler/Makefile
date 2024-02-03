@@ -27,12 +27,13 @@ crawler: crawler.o $(LLIBS)
 
 .PHONY: test valgrind clean
 
+#test
 test: crawler testing.sh
 	bash -v testing.sh 
-#>& testing.out
 
+#test for memory leaks
 valgrind: testing.sh
-	$(VALGRIND) ./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/ ../common/data/letters 2
+	$(VALGRIND) ./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html ../common/data/letters 10
 
 #clean
 clean:

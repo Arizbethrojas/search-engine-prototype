@@ -2,6 +2,7 @@
     "files.associations": {
         "webpage.h": "c",
         "mem.h": "c",
-        "pagedir.h": "c"
+        "pagedir.h": "c",
+        "stdlib.h": "c"
     }
 }
