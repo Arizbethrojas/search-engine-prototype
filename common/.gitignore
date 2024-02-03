@@ -1,3 +1,4 @@
 data
 common.a
 pagedir.o
+pagedirtest.c
