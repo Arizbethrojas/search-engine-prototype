@@ -40,4 +40,14 @@ bool pagedir_init(const char *pageDirectory);
  */
 void pagedir_save(const webpage_t *page, const char *pageDirectory, const int docID);
 
+/**************** pagedir_validate ****************/
+/* verify whether directory is indeed a Crawler-produced directory
+ *
+ * Caller provides:
+ *   a valid char pointer to the desired pageDirectory
+ * 
+ * returns true if it is a readable crawler directory and false otherwise
+ */
+bool pagedir_validate(char *pageDirectory);
+
 #endif // __PAGEDIR_H
