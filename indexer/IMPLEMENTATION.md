@@ -71,6 +71,11 @@ Pseudocode for `pagedir_validate`:
 	validates that pageDirectory is the pathname for a directory produced by the `Crawler`
     validates that indexFilename is the pathname of a file that can be written
 
+Pseudocode for `pagedir_load`:
+
+	construct the path for the using the docID
+	Either return that path or return NULL
+
 ### libcs50
 
 This is also from the IMPLEMENTATION.md spec for crawler and it is applicable to indexer: 
@@ -104,6 +109,7 @@ Detailed descriptions of each function's interface is provided as a paragraph co
 bool pagedir_init(const char* pageDirectory);
 void pagedir_save(const webpage_t* page, const char* pageDirectory, const int docID);
 bool pagedir_validate(char *pageDirectory);
+char* pagedir_load(const char* pageDirectory, const int docID);
 ```
 
 ## Error handling and recovery

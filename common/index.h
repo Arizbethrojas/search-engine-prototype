@@ -25,46 +25,46 @@ typedef struct index index_t;
  *   number of slots to be used, this value must be positive.
  *
  * We return:
- *   true if this operation is successful and false otherwise.
+ *   the newly created index or NULL if the num_slots provided is invalid 
  *
  * Caller is responsible for:
  *   later calling indexDelete.
  */
-index_t* indexNew(const int num_slots);
+index_t *indexNew(const int num_slots);
 
 /**************** indexInsert ****************/
-/* Insert index, given a hashtable, key, and item.
+/* Insert index, given a hashtable, key, and counter.
  *
  * Caller provides:
- * a valid word and docID, meaning that the word must not be NULL and the docID must be positive
+ * a valid word, index counter, meaning that the word must not be NULL and the count must not be negative
  * 
- *  * We return:
- *   nothing, this method is void 
+ *  We return:
+ *   true if the index is correctly added, false otherwise 
  */
-void indexInsert(index_t* index, char* word, const int docID);
-
-/**************** indexCounter ****************/
-/* Set the counter value for the provided word and docID. If the counter does not exist yet, we create a new one
- *
- * Caller provides:
- * a valid word and docID, meaning that the word must not be NULL and the docID must be positive
- * 
- * We return:
- *   nothing, this method is void 
- */
-void indexCounter(index_t* index, char* word, const int docID);
+bool indexInsert(index_t *index, const char *word, void *counter);
 
 /**************** indexFind ****************/
-/* Return the item associated with the given word.
+/* Return the count associated with the given word.
  *
  * Caller provides:
- *   valid pointer to an index, valid string for the word.
+ *   valid pointer to an index, valid char pointer for the word.
  * We return:
- *   pointer to the item corresponding to the given word, if found;
+ *   pointer to the count corresponding to the given word, if found;
  *   NULL if index is NULL, word is NULL, or word is not found.
- * 
  */
-void* indexFind(index_t* index, const char* word);
+void *indexFind(index_t *index, const char *word);
+
+/**************** indexLoad ****************/
+/* Loads the index file into the index data structure
+ *
+ * Caller provides:
+ *   a valid FILE,
+ *   
+ * We return:
+ *   a pointer to the index
+ *  
+ */
+index_t *indexLoad(FILE *fp);
 
 /**************** indexWrite ****************/
 /* Write the index type to the output file
@@ -74,22 +74,10 @@ void* indexFind(index_t* index, const char* word);
  *   FILE open for writing,
  *   
  * We return:
- *   true if successfully written to file, false if otherwise
+ *   nothing, this method is void
  */
-bool indexWrite(index_t* index, FILE* fp);
+void indexWrite(index_t *index, FILE *fp);
 
-/**************** indexLoad ****************/
-/* Loads the index file into the index data structure
- *
- * Caller provides:
- *   valid pointer to an index, 
- *   a valid FILE,
- *   
- * We return:
- *   nothing, this method is void 
- *  
- */
-void indexLoad(index_t* index, FILE* fp);
 
 /**************** indexDelete ****************/
 /* Delete index and its associated memory 
@@ -102,6 +90,6 @@ void indexLoad(index_t* index, FILE* fp);
  *   free the index
  * 
  */
-void indexDelete(index_t* index);
+void indexDelete(index_t *index);
 
 #endif // __INDEX_H

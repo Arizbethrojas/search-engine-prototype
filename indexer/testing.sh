@@ -27,7 +27,7 @@
 ./indexer ../common/data/letters ../common/data/readOnly/readOnly.index
 
 #invalid indexFile (existing, read-only file)
-./indexer ../common/data/letters ../common/data/readOnly.index
+./indexer ../common/data/letters ../common/data/readOnly/readOnly.index
 
 #Run indexer on a variety of pageDirectories and use indextest as one means of validating the resulting index.
 ./indexer ../common/data/letters ../common/data/letters

@@ -20,8 +20,8 @@
  * Caller provides:
  *   a valid char pointer to the desired pageDirectory
  * We guarantee:
- *   a NULL directory is ignored; 
- *   there is a directory ending in '/.crawler' created 
+ *   a NULL directory is ignored;
+ *   there is a directory ending in '/.crawler' created
  * Caller is responsible for:
  *   having a good time! Yay
  */
@@ -33,8 +33,8 @@ bool pagedir_init(const char *pageDirectory);
  * Caller provides:
  *   a valid char pointer to the desired pageDirectory, a valid webpage pointer to page, a valid int t
  * We guarantee:
- *   a NULL directory is ignored; 
- *   there is a directory for the corresponding docID created 
+ *   a NULL directory is ignored;
+ *   there is a directory for the corresponding docID created
  * Caller is responsible for:
  *   having a good time! Yay
  */
@@ -45,9 +45,19 @@ void pagedir_save(const webpage_t *page, const char *pageDirectory, const int do
  *
  * Caller provides:
  *   a valid char pointer to the desired pageDirectory
- * 
+ *
  * returns true if it is a readable crawler directory and false otherwise
  */
-bool pagedir_validate(char *pageDirectory);
+bool pagedir_validate(const char *pageDirectory);
+
+/**************** pagedir_load ****************/
+/* create a path with the doc id 
+ *
+ * Caller provides:
+ *   a valid char pointer to the desired pageDirectory and a docID
+ *
+ * returns the path if it is accessible, otherwise returns NULL
+ */
+char *pagedir_load(const char *pageDirectory, const int docID);
 
 #endif // __PAGEDIR_H

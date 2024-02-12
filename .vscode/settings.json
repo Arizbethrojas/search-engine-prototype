@@ -3,6 +3,7 @@
         "webpage.h": "c",
         "mem.h": "c",
         "pagedir.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "word.h": "c"
     }
 }

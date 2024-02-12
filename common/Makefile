@@ -9,7 +9,7 @@ CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$L
 CC=gcc
 MAKE = make
 
-OBJS = pagedir.o 
+OBJS = pagedir.o index.o word.o
 LIB = common.a
 .PHONY: all clean 
 
@@ -21,6 +21,10 @@ common.a: $(OBJS)
 	ar cr $(LIB) $^
 
 pagedir.o: pagedir.c pagedir.h $L/webpage.h 
+
+index.o: index.c index.h $L/hashtable.h $L/counters.h $L/file.h
+
+word.o: word.c word.h 
 
 # clean up after our compilation
 clean:
