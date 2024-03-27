@@ -16,9 +16,10 @@
 #include "file.h"
 #include "index.h"
 #include "word.h"
+#include "mem.h"
 
 int main(const int argc, char *argv[]);
-void indexBuild(char *pageDirectory, FILE* indexFile);
+index_t *indexBuild(char *pageDirectory);
 void indexPage(index_t *index, webpage_t *webpage, int id);
 /* **************************************** */
 
@@ -36,32 +37,34 @@ int main(const int argc, char *argv[])
     fprintf(stderr, "Usage: the pageDirectory must end with /.crawler");
     exit(1);
   }
-  FILE *indexFile = fopen(argv[2], "w");
-  if (indexFile == NULL)
+  FILE *fp = fopen(argv[2], "w");
+  if (fp == NULL)
   {
     fprintf(stderr, "Usage: must provide output file that is writable");
     exit(1);
   }
   else
   {
-    indexBuild(pageDirectory, indexFile);
-    fclose(indexFile);
+    index_t *index = indexBuild(pageDirectory);
+    indexWrite(index, fp);
+    indexDelete(index);
+    fclose(fp);
   }
   return 0;
 }
 
-void indexBuild(char *pageDirectory, FILE* indexFile) // builds an in-memory index from webpage files it finds in the provided pageDirectory
+index_t *indexBuild(char *pageDirectory) // builds an in-memory index from webpage files it finds in the provided pageDirectory
 {
   // initialize index modules
-  index_t *index = indexNew(900);
+  index_t *index = indexNew(900); //we arbitrarily choose 900 as this value 
   // loops over document ID numbers, counting from 1
   int id = 1;
-  char *fileID;
-  asprintf(&fileID, "/%d", id);
-  // creates the document file 'pageDirectory/id'
-  char *path = strcat(pageDirectory, fileID);
+  char* path = pagedir_load(pageDirectory, id); // creates the document file 'pageDirectory/id'
   FILE *fp = fopen(path, "r");
-  while (fp != NULL)
+  if (pageDirectory==NULL){
+    return NULL;
+  }
+  while (fp != NULL) //while this is a valid file...
   {
     // according to pagedir_save, this is the order lines are written in
     char *currURL = file_readLine(fp);
@@ -74,43 +77,46 @@ void indexBuild(char *pageDirectory, FILE* indexFile) // builds an in-memory ind
     {
       indexPage(index, currPage, id); // if successful, passes the webpage and docID to indexPage
     }
-    free(currURL);
-    free(depth);
-    free(fileID);
-    free(path);
+    mem_free(currURL);
+    mem_free(depth);
+    mem_free(path);
     fclose(fp);
     webpage_delete(currPage);
     id++;
-    asprintf(&fileID, "/%d", id);
-    path = strcat(pageDirectory, fileID);
+    path = pagedir_load(pageDirectory, id);
     fp = fopen(path, "r");
   }
-  free(fileID);
-  free(path);
-  indexWrite(index, indexFile);
-  indexDelete(index);
+  mem_free(path); //no leaks 
+  indexWrite(index, fp); //once the index is built, write it 
+  return index; 
+  indexDelete(index); //delete the index when done 
 }
 
-void indexPage(index_t *index, webpage_t *webpage, int id)
+void indexPage(index_t *index, webpage_t *webpage, int docID)
 {
-  char *word;
-  int position = 0;
-  while (webpage_getNextWord(webpage, position) != NULL) // while you can scan a webpage document...
+  if (index != NULL && webpage != NULL) // defensive programming
   {
-    char *word = webpage_getNextWord(webpage, position);
-    if (strlen(word) > 3) // skips trivial words (less than length 3),
+    int position = 0;
+    char *currWord = webpage_getNextWord(webpage, &position);
+    while (currWord != NULL) // while you can scan a webpage document...
     {
-      normalizeWord(word);                // normalizes the word (converts to lower case),
-      if (indexFind(index, word) == NULL) // looks up the word in the index, if NULL, it does not exist yet
+      if (strlen(currWord) > 3) // skips trivial words (less than length 3),
       {
-        indexInsert(index, word, id); // add its words to the index
+        char* normalized= normalizeWord(currWord);                // normalizes the word (converts to lower case),
+        void* count = indexFind(index, normalized);
+        if (count == NULL) // looks up the word in the index, if NULL, it does not exist yet
+        {
+          counters_t* newCount = counters_new(); //create a new counter 
+          counters_add(newCount, docID);
+          indexInsert(index, currWord, newCount); // add its words to the index
+        }
+        else // this already exists, so we will increment the count of occurences of this word in this docID
+        {
+          counters_add(count, docID);
+        }
+        free(currWord);
       }
-      else // this already exists, so we will increment the count of occurences of this word in this docID
-      {
-        indexCounter(index, word, id);
-      }
-      free(word);
+      currWord = webpage_getNextWord(webpage, &position); // steps through each word of the webpage,
     }
-    position++; // steps through each word of the webpage,
   }
 }
